@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       ipa_url:
-        description: YouTube IPA URL (iOS 16 base, 21.33.6)
-        required: true
+        description: YouTube IPA URL (iOS 16 base, 21.33.6). Leave empty to skip.
+        required: false
         default: "https://www.dropbox.com/scl/fi/1m7rq3lpkg3mfsone2299/com.google.ios.youtube-21.33.6-eeveedecrypter.ipa?rlkey=b2nsvre89881puprynwkfau8q&st=4fkh7ry8&dl=1"
         type: string
       ipa_url_ios17:
@@ -36,10 +36,13 @@ jobs:
           import json
           import os
 
-          targets = [{"label": "ios16", "url": os.environ["IPA_URL"]}]
-          second = os.environ.get("IPA_URL_IOS17", "").strip()
-          if second:
-              targets.append({"label": "ios17", "url": second})
+          targets = []
+          for label, var in (("ios16", "IPA_URL"), ("ios17", "IPA_URL_IOS17")):
+              url = os.environ.get(var, "").strip()
+              if url:
+                  targets.append({"label": label, "url": url})
+          if not targets:
+              raise SystemExit("Provide at least one IPA URL")
           print("targets=" + json.dumps(targets))
           PY
 
